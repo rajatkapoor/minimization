@@ -453,15 +453,16 @@ module Minimization
   #  min.f_minimum
   #  min.log
   # Source:
+  #   * Wikipedia: https://en.wikipedia.org/wiki/Secant_method
   #   * R.L. Burden, J. Faires: Numerical Analysis 
   class Bisection < Unidimensional
 
     def iterate()
-      ax = @lower
-      cx = @upper
+      ax = @lower # lower limit of the interval
+      cx = @upper #upper limit of the interval
       k = 0;
       while (ax-cx).abs > @epsilon and k<@max_iteration
-        bx = (ax + cx).quo(2);
+        bx = (ax + cx).quo(2); # interval bisected into two
         fa = f(ax);
         fb = f(bx);
         fc = f(cx);
@@ -473,11 +474,57 @@ module Minimization
         k +=1;
         @log << [k, ax.to_f, cx.to_f, f(ax).to_f, f(cx).to_f, (ax-cx).abs.to_f, (f(ax)-f(cx)).abs.to_f]
       end
-      
+      #assigning values to variables holding the minimum values
       if (fa<fc)
         @x_minimum,@f_minimum = ax.to_f, f(ax).to_f;
       else 
         @x_minimum,@f_minimum = cx.to_f, f(cx).to_f;
+      end
+
+    end
+  end
+
+  # = Regula Falsi Method for Minimization. 
+  # Also known as false position method
+  # See Unidimensional for methods.
+  # == Usage.
+  #  require 'minimization'
+  #  min=Minimization::RegulaFalsi.new(-1,5  , proc {|x| 4*(x)**2+8(x)+1}
+  #  min.iterate
+  #  min.x_minimum
+  #  min.f_minimum
+  #  min.log
+  # Source:
+  #   * Wikipedia: https://en.wikipedia.org/wiki/False_position_method
+  #   * R.L. Burden, J. Faires: Numerical Analysis 
+  class RegulaFalsi < Unidimensional
+    def iterate ()
+      ax = @lower #lower limit of interval stored in ax
+      bx = @upper #lower limit of interval stored in bx
+      k = 0; #count to keep track of interatino number
+      if (f(ax)*f(bx)>0)
+        raise "Invalid interval. One root of proc (or f(x)) must lie in the provided interval"
+      end
+      while (ax-bx).abs > @epsilon and k<@max_iteration
+        fa = f(ax);
+        fb = f(bx);
+        ck = bx-f(bx)*(bx-ax).quo(fb-fa);
+        fc = f(ck);
+        # changing that bound of the interval on which the function has same sign as ck
+        if (fa*fc>0)
+          ax = ck;
+        else
+          bx = ck;
+        end
+        k +=1;
+        # appending adding all entries to log
+        @log << [k, ax.to_f, bx.to_f, f(ax).to_f, f(bx).to_f, (ax-bx).abs.to_f, (f(ax)-f(bx)).abs.to_f]
+      end
+      #assigning values to variables holding the minimum values
+      if (fa<fb)
+        @x_minimum,@f_minimum = ax.to_f, f(ax).to_f;
+      else 
+        @x_minimum,@f_minimum = bx.to_f, f(bx).to_f;
       end
 
     end
