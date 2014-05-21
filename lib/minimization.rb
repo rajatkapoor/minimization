@@ -19,14 +19,14 @@
 # Algorithms for unidimensional minimization
 require 'text-table'
 module Minimization
-  VERSION="0.2.1"
-  FailedIteration=Class.new(Exception)
+  VERSION = "0.2.1"
+  FailedIteration = Class.new(Exception)
   # Base class for unidimensional minimizers
   class Unidimensional
     # Default value for error on f(x)
-    EPSILON=1e-6
+    EPSILON = 1e-6
     # Default number of maximum iterations
-    MAX_ITERATIONS=100
+    MAX_ITERATIONS = 100
     # Minimum value for x
     attr_reader :x_minimum
     # Minimum value for f(x)
@@ -44,20 +44,20 @@ module Minimization
     # Create a new minimizer
     def initialize(lower, upper, proc)
       raise "first argument  should be lower than second" if lower>=upper
-      @lower=lower
-      @upper=upper
-      @proc=proc
+      @lower = lower
+      @upper = upper
+      @proc = proc
       golden = 0.3819660;
       @expected = @lower + golden * (@upper - @lower);
-      @max_iteration=MAX_ITERATIONS
-      @epsilon=EPSILON
-      @iterations=0
-      @log=[]
-      @log_header=%w{I xl xh f(xl) f(xh) dx df(x)}
+      @max_iteration = MAX_ITERATIONS
+      @epsilon = EPSILON
+      @iterations = 0
+      @log = []
+      @log_header = %w{I xl xh f(xl) f(xh) dx df(x)}
     end
     # Set expected value
     def expected=(v)
-      @expected=v
+      @expected = v
     end
     def log_summary
       @log.join("\n")
@@ -69,12 +69,12 @@ module Minimization
     # * <tt>expected</tt>: Optional expected value. Faster the search is near correct value.
     # * <tt>&block</tt>: Block with function to minimize
     # == Usage:
-    #   minimizer=Minimization::GoldenSection.minimize(-1000, 1000) {|x|
+    #   minimizer = Minimization::GoldenSection.minimize(-1000, 1000) {|x|
     #             x**2 }
     # 
-    def self.minimize(lower,upper,expected=nil,&block)
-      minimizer=new(lower,upper,block)
-      minimizer.expected=expected unless expected.nil?
+    def self.minimize(lower, upper, expected = nil, &block)
+      minimizer = new(lower, upper, block)
+      minimizer.expected = expected unless expected.nil?
       raise FailedIteration unless minimizer.iterate
       minimizer
     end
@@ -92,7 +92,7 @@ module Minimization
   #   f   = lambda {|x| x**2}
   #   fd  = lambda {|x| 2x}
   #   fdd = lambda {|x| 2}
-  #   min = Minimization::NewtonRaphson.new(-1000,1000, f,fd,fdd)
+  #   min = Minimization::NewtonRaphson.new(-1000, 1000, f, fd, fdd)
   #   min.iterate
   #   min.x_minimum
   #   min.f_minimum
@@ -106,9 +106,9 @@ module Minimization
     # * <tt>proc_2d</tt>: Second derivative
     # 
     def initialize(lower, upper, proc, proc_1d, proc_2d)
-      super(lower,upper,proc)
-      @proc_1d=proc_1d
-      @proc_2d=proc_2d
+      super(lower, upper, proc)
+      @proc_1d = proc_1d
+      @proc_2d = proc_2d
     end
     # Raises an error
     def self.minimize(*args)
@@ -116,18 +116,18 @@ module Minimization
     end
     def iterate
       # First
-      x_prev=@lower
-      x=@expected
-      failed=true
-      k=0
+      x_prev = @lower
+      x = @expected
+      failed = true
+      k = 0
       while (x-x_prev).abs > @epsilon and k<@max_iteration
         k+=1
-        x_prev=x
-        x=x-(@proc_1d.call(x).quo(@proc_2d.call(x)))
-        f_prev=f(x_prev)
-        f=f(x)
-        x_min,x_max=[x,x_prev].min, [x,x_prev].max 
-        f_min,f_max=[f,f_prev].min, [f,f_prev].max 
+        x_prev = x
+        x = x-(@proc_1d.call(x).quo(@proc_2d.call(x)))
+        f_prev = f(x_prev)
+        f = f(x)
+        x_min, x_max = [x, x_prev].min,  [x, x_prev].max 
+        f_min, f_max = [f, f_prev].min,  [f, f_prev].max 
         @log << [k, x_min, x_max, f_min, f_max, (x_prev-x).abs, (f-f_prev).abs]
       end
       raise FailedIteration, "Not converged" if k>=@max_iteration
@@ -140,7 +140,7 @@ module Minimization
   # See Unidimensional for methods.
   # == Usage.
   #  require 'minimization'
-  #  min=Minimization::GoldenSection.new(-1000,20000  , proc {|x| (x+1)**2}
+  #  min=Minimization::GoldenSection.new(-1000, 20000  , proc {|x| (x+1)**2}
   #  min.expected=1.5  # Expected value
   #  min.iterate
   #  min.x_minimum
@@ -149,11 +149,11 @@ module Minimization
   class GoldenSection < Unidimensional
     # Start the iteration
     def iterate
-      ax=@lower
-      bx=@expected
-      cx=@upper
-      c = (3-Math::sqrt(5)).quo(2);
-      r = 1-c;
+      ax = @lower
+      bx = @expected
+      cx = @upper
+      c  =  (3-Math::sqrt(5)).quo(2);
+      r  =  1-c;
 
       x0 = ax;
       x3 = cx;
@@ -185,7 +185,7 @@ module Minimization
           f2 = f1;
           f1 = f(x1);
         end
-        @log << [k, x3,x0, f1,f2,(x3-x0).abs, (f1-f2).abs]
+        @log << [k, x3, x0, f1, f2, (x3-x0).abs, (f1-f2).abs]
         
         k +=1;
       end
@@ -205,7 +205,7 @@ module Minimization
   # Direct port of Brent algorithm found on GSL.
   # See Unidimensional for methods.
   # == Usage
-  #  min=Minimization::Brent.new(-1000,20000  , proc {|x| (x+1)**2}
+  #  min=Minimization::Brent.new(-1000, 20000  , proc {|x| (x+1)**2}
   #  min.expected=1.5  # Expected value
   #  min.iterate
   #  min.x_minimum
@@ -214,7 +214,7 @@ module Minimization
 
   class Brent < Unidimensional
     GSL_SQRT_DBL_EPSILON=1.4901161193847656e-08
-    def initialize(lower,upper, proc)
+    def initialize(lower, upper,  proc)
       super
 
       @do_bracketing=true
@@ -228,8 +228,8 @@ module Minimization
 
       @x_minimum = v ;
       @f_minimum = f(v) ;
-      @x_lower=@lower
-      @x_upper=@upper
+      @x_lower = @lower
+      @x_upper = @upper
       @f_lower = f(@lower) ;
       @f_upper = f(@lower) ;
 
@@ -238,35 +238,35 @@ module Minimization
 
       @d = 0;
       @e = 0;
-      @f_v=f(v)
-      @f_w=@f_v
+      @f_v = f(v)
+      @f_w = @f_v
     end
 
     def expected=(v)
-      @x_minimum=v
-      @f_minimum=f(v)
-      @do_bracketing=false
+      @x_minimum = v
+      @f_minimum = f(v)
+      @do_bracketing = false
     end
     
     def bracketing
-      eval_max=10
+      eval_max = 10
       f_left = @f_lower;
       f_right = @f_upper;
       x_left = @x_lower;
-      x_right= @x_upper;
+      x_right = @x_upper;
       golden = 0.3819660;      # golden = (3 - sqrt(5))/2 */
-      nb_eval=0
+      nb_eval = 0
 
       if (f_right >= f_left)
         x_center = (x_right - x_left) * golden + x_left;
-        nb_eval+=1;
-        f_center=f(x_center)
+        nb_eval+ = 1;
+        f_center = f(x_center)
       else
         x_center = x_right ;
         f_center = f_right ;
         x_right = (x_center - x_left).quo(golden) + x_left;
-        nb_eval+=1;
-        f_right=f(x_right);
+        nb_eval+= 1;
+        f_right = f(x_right);
       end
 
 
@@ -274,7 +274,7 @@ module Minimization
         @log << ["B#{nb_eval}", x_left, x_right, f_left, f_right, (x_left-x_right).abs, (f_left-f_right).abs]
         if (f_center < f_left )
           if (f_center < f_right)
-            @x_lower = x_left;
+            @x_lower  =  x_left;
             @x_upper = x_right;
             @x_minimum = x_center;
             @f_lower = f_left;
@@ -288,20 +288,20 @@ module Minimization
             f_center = f_right;
             x_right = (x_center - x_left).quo(golden) + x_left;
             nb_eval+=1;
-            f_right=f(x_right);
+            f_right = f(x_right);
           else # f_center == f_right */
             x_right = x_center;
             f_right = f_center;
             x_center = (x_right - x_left).quo(golden) + x_left;
             nb_eval+=1;
-            f_center=f(x_center);
+            f_center = f(x_center);
           end
         else # f_center >= f_left */
           x_right = x_center;
           f_right = f_center;
           x_center = (x_right - x_left) * golden + x_left;
           nb_eval+=1;
-          f_center=f(x_center);
+          f_center = f(x_center);
         end
       end while ((nb_eval < eval_max) and
       ((x_right - x_left) > GSL_SQRT_DBL_EPSILON * ( (x_right + x_left) * 0.5 ) + GSL_SQRT_DBL_EPSILON))
@@ -317,19 +317,19 @@ module Minimization
     # Start the minimization process
     # If you want to control manually the process, use brent_iterate
     def iterate
-      k=0
+      k = 0
       bracketing if @do_bracketing
       while k<@max_iteration and (@x_lower-@x_upper).abs>@epsilon
         k+=1
-        result=brent_iterate
-        raise FailedIteration,"Error on iteration" if !result
+        result = brent_iterate
+        raise FailedIteration, "Error on iteration" if !result
         begin 
           @log << [k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs, (@f_lower-@f_upper).abs]
         rescue =>@e
-          @log << [k, @e.to_s,nil,nil,nil,nil,nil]
+          @log << [k, @e.to_s, nil, nil, nil, nil, nil]
         end
       end
-      @iterations=k
+      @iterations = k
       return true
     end
     # Generate one iteration.
@@ -354,7 +354,7 @@ module Minimization
       tolerance =  GSL_SQRT_DBL_EPSILON * z.abs
 
       midpoint = 0.5 * (x_left + x_right)
-      _p,q,r=0,0,0
+      _p, q, r = 0, 0, 0
       if (e.abs > tolerance)
 
         # fit parabola */
@@ -397,7 +397,7 @@ module Minimization
       @e = e;
       @d = d;
 
-      f_u=f(u)
+      f_u = f(u)
 
       if (f_u <= f_z)
         if (u < z)
@@ -447,7 +447,7 @@ module Minimization
   # See Unidimensional for methods.
   # == Usage.
   #  require 'minimization'
-  #  min=Minimization::Bisection.new(1,2  , proc {|x| (x)**3-(x)-2}
+  #  min=Minimization::Bisection.new(1, 2  , proc {|x| (x)**3-(x)-2}
   #  min.iterate
   #  min.x_minimum
   #  min.f_minimum
@@ -475,9 +475,9 @@ module Minimization
       end
       
       if (fa<fc)
-        @x_minimum,@f_minimum = ax.to_f, f(ax).to_f;
+        @x_minimum, @f_minimum = ax.to_f, f(ax).to_f;
       else 
-        @x_minimum,@f_minimum = cx.to_f, f(cx).to_f;
+        @x_minimum, @f_minimum = cx.to_f, f(cx).to_f;
       end
 
     end
