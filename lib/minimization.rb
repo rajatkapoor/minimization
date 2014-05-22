@@ -43,7 +43,7 @@ module Minimization
     attr_reader :iterations
     # Create a new minimizer
     def initialize(lower, upper, proc)
-      raise "first argument  should be lower than second" if lower>=upper
+      raise "first argument should be lower than second" if lower>=upper
       @lower = lower
       @upper = upper
       @proc = proc
@@ -140,7 +140,7 @@ module Minimization
   # See Unidimensional for methods.
   # == Usage.
   #  require 'minimization'
-  #  min=Minimization::GoldenSection.new(-1000, 20000  , proc {|x| (x+1)**2}
+  #  min = Minimization::GoldenSection.new(-1000, 20000, proc {|x| (x+1)**2}
   #  min.expected=1.5  # Expected value
   #  min.iterate
   #  min.x_minimum
@@ -192,6 +192,7 @@ module Minimization
 
       if f1 < f2
         @x_minimum = x1;
+end
         @f_minimum = f1;
       else
         @x_minimum = x2;
@@ -205,7 +206,7 @@ module Minimization
   # Direct port of Brent algorithm found on GSL.
   # See Unidimensional for methods.
   # == Usage
-  #  min=Minimization::Brent.new(-1000, 20000  , proc {|x| (x+1)**2}
+  #  min = Minimization::Brent.new(-1000, 20000, proc {|x| (x+1)**2}
   #  min.expected=1.5  # Expected value
   #  min.iterate
   #  min.x_minimum
@@ -306,6 +307,7 @@ module Minimization
       end while ((nb_eval < eval_max) and
       ((x_right - x_left) > GSL_SQRT_DBL_EPSILON * ( (x_right + x_left) * 0.5 ) + GSL_SQRT_DBL_EPSILON))
       @x_lower = x_left;
+end
       @x_upper = x_right;
       @x_minimum = x_center;
       @f_lower = f_left;
@@ -482,5 +484,4 @@ module Minimization
 
     end
   end
-
 end
