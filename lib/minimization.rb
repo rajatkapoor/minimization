@@ -192,7 +192,6 @@ module Minimization
 
       if f1 < f2
         @x_minimum = x1;
-end
         @f_minimum = f1;
       else
         @x_minimum = x2;
@@ -260,7 +259,7 @@ end
 
       if (f_right >= f_left)
         x_center = (x_right - x_left) * golden + x_left;
-        nb_eval+ = 1;
+        nb_eval+= 1;
         f_center = f(x_center)
       else
         x_center = x_right ;
@@ -307,7 +306,6 @@ end
       end while ((nb_eval < eval_max) and
       ((x_right - x_left) > GSL_SQRT_DBL_EPSILON * ( (x_right + x_left) * 0.5 ) + GSL_SQRT_DBL_EPSILON))
       @x_lower = x_left;
-end
       @x_upper = x_right;
       @x_minimum = x_center;
       @f_lower = f_left;
