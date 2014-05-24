@@ -20,8 +20,22 @@
 require 'text-table'
 module Minimization
   VERSION = "0.2.1"
+  @@gsl_present = false
   FailedIteration = Class.new(Exception)
-  # Base class for unidimensional minimizers
+
+  gspec = Gem::Specification.find_all_by_name("gsl")[0];
+  if gspec !=nil
+    @@gsl_present = true
+    @@gsl_version = gspec.version
+  end
+  
+  def self.has_gsl? #:nodoc:
+    return @@gsl_present
+  end
+
+
+# Base class for unidimensional minimizers
+
   class Unidimensional
     # Default value for error on f(x)
     EPSILON = 1e-6
