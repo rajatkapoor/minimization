@@ -719,13 +719,10 @@ module Minimization
 
 
   #/* Update stored values for next iteration */
-
-  #stored_step = stored_step;
   @prev_stored_step = prev_stored_step;
   @step_size = step_size;
   @num_iter+=1; 
 
-  #DEBUG_PRINTF(("[%d] Final State: %g  %g  %g\n", state->num_iter, x_l, x_m, x_u));
   puts @num_iter.to_s + "Final State" + x_l.to_s , x_m.to_s , x_u.to_s;
   end
 end
