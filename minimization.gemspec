@@ -5,7 +5,7 @@ $:.unshift lib unless $:.include?(lib)
 
 Gem::Specification.new do |s|
   s.name = "minimization"
-  s.version = "0.2.2"
+  s.version = "0.2.1"
   s.authors = ["Claudio Bustos"]
   s.description = ""
   s.email = ["clbustos@gmail.com"]

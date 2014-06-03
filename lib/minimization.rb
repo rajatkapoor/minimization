@@ -30,7 +30,7 @@ module Minimization
   end
   
   def self.has_gsl? #:nodoc:
-    return @@gsl_present
+    @@gsl_present
   end
 
 
