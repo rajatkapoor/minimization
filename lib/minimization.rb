@@ -496,11 +496,246 @@ module Minimization
     end
   end
 
+  #Quad Golden method
+  class QuadGolden < Unidimensional
+      REL_ERR_VAL = 1.0e-06;
+      GSL_DBL_EPSILON = 2.2204460492503131e-16;
+      ABS_ERR_VAL = 1.0e-10;
+      GOLDEN_MEAN = 0.3819660112501052;
+      GOLDEN_RATIO = 1.6180339887498950;
+      golden = 0.3819660;
+  
+#    def intialize(lower, upper, proc)
+#      super
+# #     @x_prev_small = @expected;
+#      @x_small = @expected;
+#
+#      @f_prev_small = f(@expected);
+#      @f_small = f(@expected);
+#
+ #     @step_size = 0.0;
+#      @stored_step = 0.0;
+ #     @prev_stored_step = 0.0;
+#      @num_iter = 0;
+#
+#      @x_lower = lower ;
+#      @x_upper = upper ;
+#      @f_lower = f(@x_lower) ;
+#      @f_upper = f(@x_upper) ;
+#      f = 0;
+#      puts (lower, upper)
+#    end
+
+    def iterate()
+
+      @x_prev_small = @expected;
+      @x_small = @expected;
+
+      @f_prev_small = f(@expected);
+      @f_small = f(@expected);
+
+      @step_size = 0.0;
+      @stored_step = 0.0;
+      @prev_stored_step = 0.0;
+      @num_iter = 0;
+
+      @x_lower = @lower ;
+      @x_upper = @upper ;
+      @f_lower = f(@x_lower) ;
+      @f_upper = f(@x_upper) ;
+      f = 0;
+
+      x_m = @expected;
+      f_m = f(@expected);
+
+      x_l = @lower;
+      x_u = @upper;
+
+      x_small = @x_small;
+      f_small = @f_small;
+
+      x_prev_small = @x_prev_small;
+      f_prev_small = @f_prev_small;
+  
+      stored_step = @stored_step; # update on exit 
+      prev_stored_step = @prev_stored_step; #update on exit 
+      step_size = @step_size; # update on exit 
+
+      quad_step_size = prev_stored_step;
+   
+      x_midpoint = 0.5 * (x_l + x_u);
+      tol = REL_ERR_VAL * x_m.abs + ABS_ERR_VAL; # total error tolerance 
+
+
+
+      if (stored_step.abs - tol > -2.0 * GSL_DBL_EPSILON)
+        #Fit quadratic 
+        double c3 = (x_m - x_small) * (f_m - f_prev_small);
+        double c2 = (x_m - x_prev_small) * (f_m - f_small);
+        double c1 = (x_m - x_prev_small) * c2 - (x_m - x_small) * c3;
+
+        c2 = 2.0 * (c2 - c3);
+
+        if (c2.abs > GSL_DBL_EPSILON) # if( c2 != 0 ) 
+          if (c2 > 0.0)
+            c1 = -c1;
+          end
+
+          c2 =  c2.abs;
+
+          quad_step_size = c1.quo(c2);
+        else
+    
+        # Handle case where c2 ~=~ 0  */
+        # Insure that the line search will NOT take a quadratic interpolation step in this iteration
+        quad_step_size = stored_step;
+        end
+
+        prev_stored_step = stored_step;
+        stored_step = step_size;
+      end
+
+      x_trial = x_m + quad_step_size;
+
+      if (quad_step_size.abs <  (0.5 * prev_stored_step).abs && x_trial > x_l && x_trial < x_u)
+      
+        #/* Take quadratic interpolation step */
+        step_size = quad_step_size;
+
+        #/* Do not evaluate function too close to x_l or x_u */
+        if ((x_trial - x_l) < 2.0 * tol || (x_u - x_trial) < 2.0 * tol)
+          step_size = (x_midpoint >= x_m ? +1.0 : -1.0) * tol.abs;
+        end
+
+        #DEBUG_PRINTF(("quadratic step: %g\n", step_size));
+        puts "quadratic step: " + step_size.to_s,"";
+      
+      elsif ((x_small != x_prev_small && x_small < x_m && x_prev_small < x_m) ||
+             (x_small != x_prev_small && x_small > x_m && x_prev_small > x_m))
+        #/* Take safeguarded function comparison step */
+        #double outside_interval, inside_interval;
+        if (x_small < x_m)
+    
+          outside_interval = x_l - x_m;
+          inside_interval = x_u - x_m;
+        else
+    
+          outside_interval = x_u - x_m;
+          inside_interval = x_l - x_m;
+        end
+        if (inside_interval.abs <= tol)
+            #/* Swap inside and outside intervals */
+            double tmp = outside_interval;
+            outside_interval = inside_interval;
+            inside_interval = tmp;
+        end
+
+        #{
+          double step = inside_interval;
+          double scale_factor;
+
+          if (outside_interval.abs < inside_interval.abs)
+              scale_factor = 0.5 * Math::sqrt(-outside_interval.quo(inside_interval));
+          else
+              scale_factor = (5.0 / 11.0) * (0.1 - inside_interval.quo(outside_interval));
+          end
+
+          @stored_step = step;
+          step_size = scale_factor * step;
+        #}
+
+        #DEBUG_PRINTF(("safeguard step: %g\n", step_size));
+        puts "safeguarded step: " + step_size,"";
+    
+      else
+        #/* Take golden section step */
+        #double step;
+
+        if (x_m < x_midpoint)
+            step = x_u - x_m;
+        else
+            step = x_l - x_m;
+        end
+        @stored_step = step;
+        step_size = GOLDEN_MEAN * step;
+
+        #DEBUG_PRINTF(("golden step: %g\n", step_size));
+      end
+
+      #/* Do not evaluate function too close to x_minimum */
+      if (step_size.abs > tol)
+        x_eval = x_m + step_size;
+      else
+        x_eval = x_m + (step_size >= 0 ? +1.0 : -1.0) * tol.abs;
+      end
+      #/* Evaluate function at the new point x_eval */
+      f_eval = f(x_eval);
+
+      #/* Update {x,f}_lower, {x,f}_upper, {x,f}_prev_small, {x,f}_small, and {x,f}_minimum */
+      if (f_eval <= f_m)
+          if (x_eval < x_m)
+              @x_upper = x_m;
+              @f_upper = f_m;     
+          else
+              @x_lower = x_m;
+              @f_upper = f_m;
+          end
+
+          @x_prev_small = x_small;
+          @f_prev_small = f_small;
+
+          @x_small = x_m;
+          @f_small = f_m;
+
+          @x_minimum = x_eval;
+          @f_minimum = f_eval;
+      else
+          if (x_eval < x_m)
+              @x_lower = x_eval;
+              @f_lower = f_eval;
+          else
+                
+              @x_upper = x_eval;
+              @f_upper = f_eval;
+          end
+          if (f_eval <= f_small ||  (x_small - x_m).abs < 2.0 * GSL_DBL_EPSILON)
+
+              @x_prev_small = x_small;
+              @f_prev_small = f_small;
+
+              @x_small = x_eval;
+              @f_small = f_eval;
+
+          elsif (f_eval <= f_prev_small ||
+             (x_prev_small - x_m).abs < 2.0 * GSL_DBL_EPSILON ||
+             (x_prev_small - x_small).abs < 2.0 * GSL_DBL_EPSILON)
+      
+              @x_prev_small = x_eval;
+              @f_prev_small = f_eval;
+          end
+      
+      end
+    
+
+
+  #/* Update stored values for next iteration */
+
+  #stored_step = stored_step;
+  @prev_stored_step = prev_stored_step;
+  @step_size = step_size;
+  @num_iter+=1; 
+
+  #DEBUG_PRINTF(("[%d] Final State: %g  %g  %g\n", state->num_iter, x_l, x_m, x_u));
+  puts @num_iter.to_s + "Final State" + x_l.to_s , x_m.to_s , x_u.to_s;
+  end
+end
+
+
   class Multidimensional
     # Default value for error on function
-    EPSILON = 1e-6
+    #EPSILON = 1e-6
     # Default number of maximum iterations
-    MAX_ITERATIONS = 100
+    #MAX_ITERATIONS = 100
     # Minimum value for x
     attr_reader :x_minimum
     # Minimum value for f(x)
