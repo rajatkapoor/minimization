@@ -68,6 +68,7 @@ module Minimization
       @iterations = 0
       @log = []
       @log_header = %w{I xl xh f(xl) f(xh) dx df(x)}
+      
     end
     # Set expected value
     def expected=(v)
@@ -162,6 +163,25 @@ module Minimization
   #  min.log
   class GoldenSection < Unidimensional
     # Start the iteration
+    def gsl_iterate
+    	@Gfun = GSL::Function.alloc(@proc)
+		  k = 0
+      @Gmin = FMinimizer.alloc(FMinimizer::Goldensection)
+      m = @expected
+      a = @lower
+      b = @upper
+      @Gmin.set(@Gfun,m,a,b)
+      begin
+      k += 1
+      status = @Gmin.iterate
+      status = @Gmin.test_interval(@epsilon, 0.0)
+      puts("Converged:") if status == GSL::SUCCESS
+      a = @Gmin.x_lower
+      b = @Gmin.x_upper
+      m = @Gmin.x_minimum
+      end while status == GSL::CONTINUE and k < @max_iteration
+    end
+
     def iterate
       ax = @lower
       bx = @expected
@@ -182,9 +202,6 @@ module Minimization
       f2 = f(x2);
 
       k = 1;
-
-
-
       while (x3-x0).abs > @epsilon and k<@max_iteration
         if f2 < f1
           x0 = x1;
@@ -718,11 +735,12 @@ module Minimization
     
 
 
-  #/* Update stored values for next iteration */
-  @prev_stored_step = prev_stored_step;
-  @step_size = step_size;
-  @num_iter+=1; 
+    #/* Update stored values for next iteration */
+    @prev_stored_step = prev_stored_step;
+    @step_size = step_size;
+    @num_iter+=1; 
 
-  puts @num_iter.to_s + "Final State" + x_l.to_s , x_m.to_s , x_u.to_s;
+    puts @num_iter.to_s + "Final State" + x_l.to_s , x_m.to_s , x_u.to_s;
+    end
   end
 end
