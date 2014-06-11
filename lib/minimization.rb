@@ -166,7 +166,7 @@ module Minimization
     def gsl_iterate
     	@Gfun = GSL::Function.alloc(@proc)
 		  k = 0
-      @Gmin = FMinimizer.alloc(FMinimizer::Goldensection)
+      @Gmin = FMinimizer.alloc(FMinimizer::GOLDENSECTION)
       m = @expected
       a = @lower
       b = @upper
@@ -467,11 +467,29 @@ module Minimization
           @f_v = f_u;
           return true;
         end
-
       end
       return false
-
     end
+
+    def gsl_iterate
+      @Gfun = GSL::Function.alloc(@proc)
+      k = 0
+      @Gmin = FMinimizer.alloc(FMinimizer::BRENT)
+      m = @expected
+      a = @lower
+      b = @upper
+      @Gmin.set(@Gfun,m,a,b)
+      begin
+      k += 1
+      status = @Gmin.iterate
+      status = @Gmin.test_interval(@epsilon, 0.0)
+      puts("Converged:") if status == GSL::SUCCESS
+      a = @Gmin.x_lower
+      b = @Gmin.x_upper
+      m = @Gmin.x_minimum
+      end while status == GSL::CONTINUE and k < @max_iteration
+    end
+
   end
 
   # = Bisection Method for Minimization.
