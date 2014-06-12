@@ -760,5 +760,24 @@ module Minimization
 
     puts @num_iter.to_s + "Final State" + x_l.to_s , x_m.to_s , x_u.to_s;
     end
+
+    def gsl_iterate
+      @Gfun = GSL::Function.alloc(@proc)
+      k = 0
+      @Gmin = FMinimizer.alloc(FMinimizer::QUADGOLDEN)
+      m = @expected
+      a = @lower
+      b = @upper
+      @Gmin.set(@Gfun,m,a,b)
+      begin
+      k += 1
+      status = @Gmin.iterate
+      status = @Gmin.test_interval(@epsilon, 0.0)
+      puts("Converged:") if status == GSL::SUCCESS
+      a = @Gmin.x_lower
+      b = @Gmin.x_upper
+      m = @Gmin.x_minimum
+      end while status == GSL::CONTINUE and k < @max_iteration
+    end
   end
 end
