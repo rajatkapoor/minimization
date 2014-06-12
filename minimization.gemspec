@@ -7,14 +7,14 @@ Gem::Specification.new do |s|
   s.name = "minimization"
   s.version = "0.2.1"
   s.authors = ["Claudio Bustos"]
-  s.description = ""
+  s.description = "Minimization algorithms on pure Ruby"
   s.email = ["clbustos@gmail.com"]
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
   #s.homepage = "http://ruby-statsample.rubyforge.org/""
-  s.summary = "A suite for bminimization in Ruby"
+  s.summary = "A suite for minimization in Ruby"
   s.add_runtime_dependency 'text-table', '~>1.2'
   s.add_development_dependency 'rake', '~>0.9'
   s.add_development_dependency 'bundler'

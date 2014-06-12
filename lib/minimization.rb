@@ -764,7 +764,7 @@ module Minimization
     def gsl_iterate
       @Gfun = GSL::Function.alloc(@proc)
       k = 0
-      @Gmin = FMinimizer.alloc(FMinimizer::QUADGOLDEN)
+      @Gmin = FMinimizer.alloc(FMinimizer::QUAD_GOLDEN)
       m = @expected
       a = @lower
       b = @upper
