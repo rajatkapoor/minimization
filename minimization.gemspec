@@ -16,8 +16,9 @@ Gem::Specification.new do |s|
   #s.homepage = "http://ruby-statsample.rubyforge.org/""
   s.summary = "A suite for minimization in Ruby"
   s.add_runtime_dependency 'text-table', '~>1.2'
-  s.add_development_dependency 'rake', '~>0.9'
-  s.add_development_dependency 'bundler'
-  s.add_development_dependency 'rspec', '>=2.0'
-  s.add_development_dependency 'rubyforge'
+  s.add_runtime_dependency 'rb-gsl', '~>1.2'
+  s.add_development_dependency 'rake', '~>10'
+  s.add_development_dependency 'bundler', '~>1.3'
+  s.add_development_dependency 'rspec', '~>2.0'
+  s.add_development_dependency 'rubyforge', '~>2.0'
 end
