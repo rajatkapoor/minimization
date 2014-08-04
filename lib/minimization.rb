@@ -93,12 +93,50 @@ module Minimization
       raise FailedIteration unless minimizer.iterate
       minimizer
     end
+    
     # Iterate to find the minimum
     def iterate
       raise "You should implement this"
     end
+    
     def f(x)
       @proc.call(x)
+    end
+
+    def gsl_iterate
+      if (self.class==Minimization::GoldenSection)
+        ch = 0
+      elsif (self.class==Minimization::Brent)
+        ch = 1
+      elsif (self.class==Minimization::QuadGolden)
+        ch = 2
+      else
+        raise GSLMethodNotPresent, "GSL does not a function for this type of minimization"
+      end
+      @Gfun = GSL::Function.alloc(@proc)
+      k = 0
+      @Gmin = FMinimizer.alloc(ch)
+      @x_minimum = @expected
+      @x_lower = @lower
+      @x_upper = @upper
+      @Gmin.set(@Gfun,@x_minimum,@x_lower,@x_upper)
+      begin
+      k += 1
+      status = @Gmin.iterate
+      status = @Gmin.test_interval(@epsilon, 0.0)
+      puts("Converged:") if status == GSL::SUCCESS
+      @x_lower = @Gmin.x_lower
+      @x_upper = @Gmin.x_upper
+      @x_minimum = @Gmin.x_minimum
+      @f_lower = f(@x_lower)
+      @f_upper = f(@x_upper)
+      begin 
+        @log << [k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs, (@f_lower-@f_upper).abs]
+      rescue =>@e
+        @log << [k, @e.to_s, nil, nil, nil, nil, nil]
+      end
+      end while status == GSL::CONTINUE and k < @max_iteration
+
     end
   end
   # Classic Newton-Raphson minimization method.  
@@ -163,25 +201,6 @@ module Minimization
   #  min.log
   class GoldenSection < Unidimensional
     # Start the iteration
-    def gsl_iterate
-    	@Gfun = GSL::Function.alloc(@proc)
-		  k = 0
-      @Gmin = FMinimizer.alloc(FMinimizer::GOLDENSECTION)
-      m = @expected
-      a = @lower
-      b = @upper
-      @Gmin.set(@Gfun,m,a,b)
-      begin
-      k += 1
-      status = @Gmin.iterate
-      status = @Gmin.test_interval(@epsilon, 0.0)
-      puts("Converged:") if status == GSL::SUCCESS
-      a = @Gmin.x_lower
-      b = @Gmin.x_upper
-      m = @Gmin.x_minimum
-      end while status == GSL::CONTINUE and k < @max_iteration
-    end
-
     def iterate
       ax = @lower
       bx = @expected
@@ -470,26 +489,6 @@ module Minimization
       end
       return false
     end
-
-    def gsl_iterate
-      @Gfun = GSL::Function.alloc(@proc)
-      k = 0
-      @Gmin = FMinimizer.alloc(FMinimizer::BRENT)
-      m = @expected
-      a = @lower
-      b = @upper
-      @Gmin.set(@Gfun,m,a,b)
-      begin
-      k += 1
-      status = @Gmin.iterate
-      status = @Gmin.test_interval(@epsilon, 0.0)
-      puts("Converged:") if status == GSL::SUCCESS
-      a = @Gmin.x_lower
-      b = @Gmin.x_upper
-      m = @Gmin.x_minimum
-      end while status == GSL::CONTINUE and k < @max_iteration
-    end
-
   end
 
   class QuadGolden < Unidimensional
@@ -698,33 +697,5 @@ module Minimization
       @iterations = k
       return true
     end
-
-    def gsl_iterate
-      @Gfun = GSL::Function.alloc(@proc)
-      k = 0
-      @Gmin = FMinimizer.alloc(FMinimizer::QUAD_GOLDEN)
-      @x_minimum = @expected
-      @x_lower = @lower
-      @x_upper = @upper
-      @Gmin.set(@Gfun,@x_minimum,@x_lower,@x_upper)
-      begin
-      k += 1
-      status = @Gmin.iterate
-      status = @Gmin.test_interval(@epsilon, 0.0)
-      puts("Converged:") if status == GSL::SUCCESS
-      @x_lower = @Gmin.x_lower
-      @x_upper = @Gmin.x_upper
-      @x_minimum = @Gmin.x_minimum
-      @f_lower = f(@x_lower)
-      @f_upper = f(@x_upper)
-      begin 
-        @log << [k, @x_lower, @x_upper, @f_lower, @f_upper, (@x_lower-@x_upper).abs, (@f_lower-@f_upper).abs]
-      rescue =>@e
-        @log << [k, @e.to_s, nil, nil, nil, nil, nil]
-      end
-      end while status == GSL::CONTINUE and k < @max_iteration
-
-    end
   end
-
 end
