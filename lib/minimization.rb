@@ -1,6 +1,7 @@
 # = minimization.rb -
 # Minimization- Minimization algorithms on pure Ruby
 # Copyright (C) 2010 Claudio Bustos
+# 				2014 Rajat Kapoor
 #
 # This program is free software you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -103,6 +104,7 @@ module Minimization
       @proc.call(x)
     end
 
+    # This method is used to call the desired GSL based minimization method if the GSL gem is installed
     def gsl_iterate
       if (self.class==Minimization::GoldenSection)
         ch = 0
@@ -491,6 +493,14 @@ module Minimization
     end
   end
 
+  # Direct port of QuadGolden algorithm found on GSL.
+  # See Unidimensional for methods.
+  # == Usage
+  #  min = Minimization::QuadGolden.new(0, 0, proc {|x| (x)**2}
+  #  min.iterate
+  #  min.x_minimum
+  #  min.f_minimum
+  #  min.log
   class QuadGolden < Unidimensional
     REL_ERR_VAL = 1.0e-06
     GSL_DBL_EPSILON = 2.2204460492503131e-16
@@ -515,6 +525,7 @@ module Minimization
       @num_iter = 0
     end
 
+    # Performs one iteration of the QuadGolden minimization method
     def qgiterate()
       x_m = @x_minimum
       f_m = @f_minimum
@@ -674,6 +685,7 @@ module Minimization
     return true
     end
 
+    # Start the iteration process using QuadGolden method
     def iterate
       k = 0
       while k<@max_iteration 
