@@ -6,9 +6,9 @@ $:.unshift lib unless $:.include?(lib)
 Gem::Specification.new do |s|
   s.name = "minimization"
   s.version = "0.2.1"
-  s.authors = ["Claudio Bustos"]
+  s.authors = ["Claudio Bustos","Rajat Kapoor"]
   s.description = "Minimization algorithms on pure Ruby"
-  s.email = ["clbustos@gmail.com"]
+  s.email = ["clbustos@gmail.com", "rajat100493@gmail.com"]
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
